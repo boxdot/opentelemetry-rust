@@ -547,4 +547,21 @@ mod tests {
             "timed out in 5 seconds. force_flush may not export any data when called"
         );
     }
+
+    #[tokio::test]
+    async fn test_batch_span_processor_smoke_shutdown() {
+        let (exporter, _export_receiver, _shutdown_receiver) = new_tokio_test_exporter();
+        BatchSpanProcessor::new(
+            Box::new(exporter),
+            tokio::spawn,
+            tokio::time::interval,
+            Default::default(),
+        )
+        .shutdown();
+
+        // 100 millis should be enough to shutdown
+        tokio::time::delay_for(Duration::from_millis(100)).await;
+
+        // If we arrived here, shutdown worked.
+    }
 }
